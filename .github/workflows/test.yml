@@ -20,7 +20,7 @@ jobs:
       - name: Coverage
         uses: shogo82148/actions-goveralls@v1
         with:
-          github-token: $${ secrets.COVERALLS_TOKEN }}
+          github-token: ${{ secrets.COVERALLS_TOKEN }}
           path-to-profile: ${{ github.workspace }}/coverage.out
           flag-name: ${{ matrix.os }}
           parallel: true
@@ -30,5 +30,5 @@ jobs:
     steps:
       - uses: shogo82148/actions-goveralls@v1
         with:
-          github-token: $${ secrets.COVERALLS_TOKEN }}
+          github-token: ${{ secrets.COVERALLS_TOKEN }}
           parallel-finished: true
