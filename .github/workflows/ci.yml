@@ -13,7 +13,8 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - run: go version
-      - run: go test -v -race ./... -covermode=atomic -coverprofile=${{ github.workspace }}/coverage.out
+      - name: Go Test
+        run: go test -v -race ./... -covermode=atomic -coverprofile=${{ github.workspace }}/coverage.out
       - uses: shogo82148/actions-goveralls@v1
         with:
           path-to-profile: ${{ github.workspace }}/coverage.out

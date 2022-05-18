@@ -1,6 +1,7 @@
 # github.com/tniswong/workerpool
 
-![CI](https://github.com/tniswong/workerpool/actions/workflows/ci.yml/badge.svg)
+[![Go Docs](https://pkg.go.dev/badge/github.com/tniswong/workerpool)](https://pkg.go.dev/github.com/tniswong/workerpool)
+[![Unit Tests](https://github.com/tniswong/workerpool/actions/workflows/ci.yml/badge.svg)](https://github.com/tniswong/workerpool/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/tniswong/workerpool/badge.svg?branch=master)](https://coveralls.io/github/tniswong/workerpool?branch=master)
 
 This package provides a concurrent worker pool implementation using a semaphore for bounded concurrency
