@@ -158,45 +158,41 @@ func (p *WorkerPool) Push(t Task, opts ...TaskOption) {
 // Run the WorkerPool. To stop processing, cancel the context
 func (p *WorkerPool) Run(ctx context.Context) {
 
-	go func() {
+	for {
 
-		for {
+		// iterate through jobs in the pool until none are left
+		for j := p.pop(); j != nil; j = p.pop() {
 
-			// iterate through jobs in the pool until none are left
-			for j := p.pop(); j != nil; j = p.pop() {
+			// acquire a semaphore lock. Using context.Background() here rather than ctx because we must still cycle
+			// through remaining jobs on the queue once ctx is cancelled.
+			_ = p.sem.Acquire(context.Background(), 1)
 
-				// acquire a semaphore lock. Using context.Background() here rather than ctx because we must still cycle
-				// through remaining jobs on the queue once ctx is cancelled.
-				_ = p.sem.Acquire(context.Background(), 1)
+			// if context is cancelled, mark job as done and release semaphore.
+			// this effectively skips the job without running it
+			if ctx.Err() != nil {
 
-				// if context is cancelled, mark job as done and release semaphore.
-				// this effectively skips the job without running it
-				if ctx.Err() != nil {
+				p.wg.Done()
+				p.sem.Release(1)
 
-					p.wg.Done()
-					p.sem.Release(1)
-
-					// continuing here allows us to purge the remaining jobs from the queue
-					continue
-
-				}
-
-				// run job
-				go p.work(ctx, j)
-
-			}
-
-			// blocks until new jobs arrive or the context is cancelled
-			select {
-			case <-p.notify:
+				// continuing here allows us to purge the remaining jobs from the queue
 				continue
-			case <-ctx.Done():
-				return
+
 			}
+
+			// run job
+			go p.work(ctx, j)
 
 		}
 
-	}()
+		// blocks until new jobs arrive or the context is cancelled
+		select {
+		case <-p.notify:
+			continue
+		case <-ctx.Done():
+			return
+		}
+
+	}
 
 }
 

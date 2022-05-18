@@ -99,15 +99,15 @@ func TestWorkerPool(t *testing.T) {
 
 	t.Run("With Retry option", func(t *testing.T) {
 
-		w := workerpool.New(1)
 		ctx := context.Background()
+
+		w := workerpool.New(1)
+		go w.Run(ctx)
 
 		expectedInvocations := 5
 		task := &errorNTimesTask{N: expectedInvocations}
 
 		w.Push(task, workerpool.Retry(true))
-
-		w.Run(ctx)
 
 		w.Wait()
 
@@ -117,15 +117,16 @@ func TestWorkerPool(t *testing.T) {
 
 	t.Run("With RetryMax option", func(t *testing.T) {
 
-		w := workerpool.New(1)
 		ctx := context.Background()
+
+		w := workerpool.New(1)
+		go w.Run(ctx)
 
 		expectedInvocations := 3
 		task := &instantErrorTask{}
 
 		w.Push(task, workerpool.RetryMax(expectedInvocations-1))
 
-		w.Run(ctx)
 		w.Wait()
 
 		assert(t, expectedInvocations == task.Invocations, "expected '%v' got '%v'", expectedInvocations, task.Invocations)
@@ -134,13 +135,14 @@ func TestWorkerPool(t *testing.T) {
 
 	t.Run("With fewer workers than tasks", func(t *testing.T) {
 
-		w := workerpool.New(1)
 		ctx := context.Background()
+
+		w := workerpool.New(1)
+		go w.Run(ctx)
 
 		task1 := &instantlyCompletedTask{}
 		task2 := &instantlyCompletedTask{}
 
-		w.Run(ctx)
 		w.Push(task1)
 		w.Push(task2)
 
@@ -153,13 +155,14 @@ func TestWorkerPool(t *testing.T) {
 
 	t.Run("With more workers than tasks", func(t *testing.T) {
 
-		w := workerpool.New(3)
 		ctx := context.Background()
+
+		w := workerpool.New(3)
+		go w.Run(ctx)
 
 		task1 := &instantlyCompletedTask{}
 		task2 := &instantlyCompletedTask{}
 
-		w.Run(ctx)
 		w.Push(task1)
 		w.Push(task2)
 
@@ -172,11 +175,11 @@ func TestWorkerPool(t *testing.T) {
 
 	t.Run("With context cancellation", func(t *testing.T) {
 
-		w := workerpool.New(2)
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
-		w.Run(ctx)
+		w := workerpool.New(2)
+		go w.Run(ctx)
 
 		task1 := &infiniteTask{}
 		task2 := &infiniteTask{}
@@ -199,9 +202,10 @@ func TestWorkerPool(t *testing.T) {
 
 	t.Run("With idling", func(t *testing.T) {
 
-		w := workerpool.New(2)
+		ctx := context.Background()
 
-		w.Run(context.Background())
+		w := workerpool.New(2)
+		go w.Run(ctx)
 
 		task1 := &instantlyCompletedTask{}
 		task2 := &instantlyCompletedTask{}
