@@ -45,12 +45,15 @@ loop:
 func Example() {
 
 	wp := workerpool.New(2)
-	go wp.Run(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go wp.Run(ctx) // runs until context is cancelled
 
 	wp.Push(NewCounterTask("task 1", 2))
 	wp.Push(NewCounterTask("task 2", 3))
 
-	wp.Wait()
+	wp.Wait() // blocks until all pending tasks are complete, but does not stop workerpool goroutine
+	cancel()  // stops the workerpool
 
 	// Unordered output:
 	// name: task 1, count:1

@@ -1,7 +1,7 @@
 # github.com/tniswong/workerpool
 
 [![Go Docs](https://pkg.go.dev/badge/github.com/tniswong/workerpool)](https://pkg.go.dev/github.com/tniswong/workerpool)
-[![Unit Tests](https://github.com/tniswong/workerpool/actions/workflows/ci.yml/badge.svg)](https://github.com/tniswong/workerpool/actions/workflows/ci.yml)
+[![Unit Tests](https://github.com/tniswong/workerpool/actions/workflows/test.yml/badge.svg)](https://github.com/tniswong/workerpool/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/tniswong/workerpool/badge.svg?branch=master)](https://coveralls.io/github/tniswong/workerpool?branch=master)
 
 This package provides a concurrent worker pool implementation using a semaphore for bounded concurrency
@@ -54,13 +54,16 @@ loop:
 func main() {
 
     wp := workerpool.New(2)
-    go wp.Run(context.Background())
+    ctx, cancel := context.WithCancel(context.Background())
+    
+    go wp.Run(ctx) // runs until context is cancelled
 
     wp.Push(NewCounterTask("task 1", 2))
     wp.Push(NewCounterTask("task 2", 3))
 
-    wp.Wait()
-
+    wp.Wait() // blocks until all pending tasks are complete, but does not stop workerpool goroutine
+    cancel() // stops the workerpool
+    
     // Unordered output:
     // name: task 1, count:1
     // name: task 2, count:1
