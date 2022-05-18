@@ -13,18 +13,16 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - run: go version
-      - run: go test -v -race -coverprofile=coverage.out ./...
-      - uses: coverallsapp/github-action@master
+      - run: go test -race -covermode atomic -coverprofile=coverage.out ./...
+      - uses: shogo82148/actions-goveralls@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./coverage.out
+          path-to-profile: coverage.out
+          flag-name: ${{ matrix.os }}
           parallel: true
   coveralls:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
+      - uses: shogo82148/actions-goveralls@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
